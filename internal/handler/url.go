@@ -23,7 +23,7 @@ type ShortenResponse struct {
 	ShortURL string `json: "short_url"`
 }
 
-func ShortenHandler(store *store.InMemoryStore) http.HandlerFunc {
+func ShortenHandler(store store.URLStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ShortenRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
@@ -41,7 +41,7 @@ func ShortenHandler(store *store.InMemoryStore) http.HandlerFunc {
 	}
 }
 
-func RedirectHandler(store *store.InMemoryStore) http.HandlerFunc {
+func RedirectHandler(store store.URLStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		code := r.URL.Path[1:]
 		url, ok := store.GetURL(code)

@@ -18,10 +18,13 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "redis:6379"
+	}
 	// 2. Initialize the in-memory store (this holds our shortened URLs)
-	urlStore := store.NewInMemoryStore()
-
+	urlStore := store.NewRedisStore(redisAddr)
+	// urlStore := store.NewInMemoryStore()
 	// 3. Create a new HTTP request multiplexer (router)
 	mux := http.NewServeMux()
 

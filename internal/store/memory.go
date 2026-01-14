@@ -15,10 +15,11 @@ func NewInMemoryStore() *InMemoryStore {
 	}
 }
 
-func (s *InMemoryStore) AddURL(shortCode string, url string) {
+func (s *InMemoryStore) AddURL(shortCode string, url string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.data[shortCode] = url
+	return nil
 }
 
 func (s *InMemoryStore) GetURL(shortCode string) (string, bool) {
