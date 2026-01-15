@@ -18,7 +18,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: url-shortener
-          image: ghcr.io/kunalsiyag/url-shortener:latest
+          image: ghcr.io/kunalsiyag/url_shortener_devops:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -37,4 +37,8 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
-            
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
