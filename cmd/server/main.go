@@ -29,6 +29,11 @@ func main() {
 	mux := http.NewServeMux()
 
 	// 4. Register route handlers
+	// GET /health - health check endpoint for Kubernetes probes
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 	// POST /shorten - creates a short URL from a long URL
 	mux.HandleFunc("/shorten", handler.ShortenHandler(urlStore))
 	// GET /{shortCode} - redirects to the original URL
