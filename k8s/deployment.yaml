@@ -14,9 +14,12 @@ spec:
       labels:
         app: url-shortener
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: url-shortener
-          image: ghcr.io/kunalsiyag/url-shortener:IMAGE_TAG  # Replaced by CI/CD with git SHA
+          image: ghcr.io/kunalsiyag/url-shortener:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
