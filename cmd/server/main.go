@@ -9,11 +9,15 @@ import (
 	"syscall"
 	"time"
 	"url_shortener/internal/handler"
+	"url_shortener/internal/metrics"
 	"url_shortener/internal/store"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
 	// 1. Get port from environment variable, default to 8080
+	metrics.Register()
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -34,6 +38,8 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
+	// GET /metrics - Prometheus metrics endpoint
+	mux.Handle("/metrics", promhttp.Handler())
 	// POST /shorten - creates a short URL from a long URL
 	mux.HandleFunc("/shorten", handler.ShortenHandler(urlStore))
 	// GET /{shortCode} - redirects to the original URL
@@ -42,7 +48,7 @@ func main() {
 	// 5. Configure the HTTP server
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: mux,
+		Handler: metrics.Middleware(mux),
 	}
 
 	// 6. Start server in a goroutine (non-blocking)
