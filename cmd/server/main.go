@@ -45,10 +45,10 @@ func main() {
 	// GET /{shortCode} - redirects to the original URL
 	mux.HandleFunc("/", handler.RedirectHandler(urlStore))
 
-	// 5. Configure the HTTP server
+	// 5. Configure the HTTP server with CORS and metrics middleware
 	server := &http.Server{
 		Addr:    ":" + port,
-		Handler: metrics.Middleware(mux),
+		Handler: metrics.CORSMiddleware(metrics.Middleware(mux)),
 	}
 
 	// 6. Start server in a goroutine (non-blocking)

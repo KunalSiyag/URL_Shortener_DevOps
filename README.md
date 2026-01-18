@@ -1,12 +1,15 @@
 # 🔗 URL Shortener - DevOps Project
 
-A production-ready URL shortener service built with Go, featuring Redis persistence, Prometheus monitoring, Grafana dashboards, and full containerization with Docker Compose and Kubernetes support.
+A production-ready URL shortener service built with Go, featuring Redis persistence, Prometheus monitoring, Grafana dashboards, Docker Compose, and Kubernetes support.
+
+![URL Shortener UI](docs/ui-screenshot.png)
 
 ## 🚀 Features
 
 - **URL Shortening**: Convert long URLs into short, shareable codes
+- **Modern Web UI**: Beautiful glassmorphism interface with copy & history
 - **Redis Storage**: Persistent URL storage with Redis
-- **Prometheus Metrics**: Built-in metrics for monitoring request rates, latency, and errors
+- **Prometheus Metrics**: Built-in metrics for monitoring
 - **Grafana Dashboards**: Visualize application performance
 - **Health Checks**: Kubernetes-ready health endpoints
 - **Graceful Shutdown**: Clean server shutdown handling
@@ -17,39 +20,18 @@ A production-ready URL shortener service built with Go, featuring Redis persiste
 
 ```
 URL_Shortener_DevOps/
-├── cmd/
-│   └── server/
-│       └── main.go              # Application entry point
+├── cmd/server/main.go           # Application entry point
 ├── internal/
-│   ├── handler/
-│   │   ├── url.go               # HTTP handlers for shorten/redirect
-│   │   └── encoding.go          # Short code generation
-│   ├── metrics/
-│   │   ├── metrics.go           # Prometheus metrics definitions
-│   │   └── middleware.go        # HTTP metrics middleware
-│   └── store/
-│       ├── store.go             # Store interface
-│       ├── memory.go            # In-memory store implementation
-│       └── redis.go             # Redis store implementation
+│   ├── handler/                 # HTTP handlers
+│   ├── metrics/                 # Prometheus metrics & middleware
+│   └── store/                   # Storage implementations
+├── ui/index.html                # Web UI
 ├── k8s/                         # Kubernetes manifests
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   ├── ingress.yaml
-│   ├── prometheus-deployment.yaml
-│   ├── prometheus-config.yaml
-│   ├── prometheus-service.yaml
-│   ├── grafana-deployment.yaml
-│   └── grafana-service.yaml
-├── grafana/
-│   └── provisioning/
-│       └── datasources/
-│           └── prometheus.yml   # Auto-configure Prometheus datasource
-├── docs/                        # Screenshots and documentation
-├── docker-compose.yml           # Full stack: app + redis + prometheus + grafana
-├── Dockerfile                   # Multi-stage Docker build
-├── prometheus.yml               # Prometheus scrape configuration
-├── go.mod
-└── go.sum
+├── grafana/                     # Grafana provisioning
+├── docs/                        # Screenshots & documentation
+├── docker-compose.yml           # Full stack setup
+├── Dockerfile                   # Multi-stage build
+└── prometheus.yml               # Prometheus config
 ```
 
 ## 🛠️ Quick Start
@@ -72,9 +54,21 @@ sudo docker ps
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| URL Shortener | http://localhost:8080 | - |
-| Prometheus | http://localhost:9090 | - |
-| Grafana | http://localhost:3000 | admin / admin |
+| **URL Shortener API** | http://localhost:8080 | - |
+| **Web UI** | Open `ui/index.html` | - |
+| **Prometheus** | http://localhost:9090 | - |
+| **Grafana** | http://localhost:3000 | admin / admin |
+
+## 🌐 Web UI
+
+Open `ui/index.html` in your browser to use the URL shortener with a beautiful interface:
+
+![URL Shortener UI](docs/ui-screenshot.png)
+
+**Features:**
+- Paste and shorten URLs with one click
+- Copy shortened URLs to clipboard
+- View recent URL history (stored locally)
 
 ## 📡 API Endpoints
 
@@ -108,24 +102,18 @@ curl http://localhost:8080/metrics
 
 ## 📊 Monitoring
 
-### Available Metrics
+### Prometheus
 
+![Prometheus Graph](docs/prometheus-graph.png)
+
+**Available Metrics:**
 | Metric | Type | Description |
 |--------|------|-------------|
-| `url_shortener_shorten_requests_total` | Counter | Total shorten requests by status |
-| `http_request_duration_seconds` | Histogram | Request latency by method/path |
+| `url_shortener_shorten_requests_total` | Counter | Total shorten requests |
+| `http_request_duration_seconds` | Histogram | Request latency |
 | `promhttp_metric_handler_requests_total` | Counter | Metrics endpoint requests |
 
-### Grafana Dashboard
-
-![Grafana Dashboard](docs/grafana-dashboard.png)
-
-### Prometheus Queries
-
-![Prometheus Query](docs/prometheus-query.png)
-
 **Useful PromQL queries:**
-
 ```promql
 # Request rate per second
 rate(promhttp_metric_handler_requests_total[1m])
@@ -135,10 +123,17 @@ histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
 
 # Average response time
 rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])
-
-# Error rate (status != 200)
-sum(rate(prometheus_http_requests_total{status!="200"}[1m]))
 ```
+
+### Grafana Dashboard
+
+![Grafana Dashboard](docs/grafana-full-dashboard.png)
+
+**Dashboard includes:**
+- HTTP Request Rate
+- Response Latency (p50, p95)
+- Error Rate
+- Pod/Service Status
 
 ## 🐳 Docker Commands
 
@@ -154,9 +149,6 @@ sudo docker compose down
 
 # Rebuild after code changes
 sudo docker compose up --build -d
-
-# Check running containers
-sudo docker ps
 ```
 
 ## ☸️ Kubernetes Deployment
@@ -184,8 +176,8 @@ kubectl port-forward svc/url-shortener 8080:80
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │   Client    │────▶│ URL Shortener│────▶│    Redis    │
-└─────────────┘     │   (Go App)   │     │  (Storage)  │
-                    └──────┬───────┘     └─────────────┘
+│   (UI)      │     │   (Go App)   │     │  (Storage)  │
+└─────────────┘     └──────┬───────┘     └─────────────┘
                            │ /metrics
                     ┌──────▼───────┐
                     │  Prometheus  │
@@ -195,6 +187,14 @@ kubectl port-forward svc/url-shortener 8080:80
                     │   Grafana    │
                     └──────────────┘
 ```
+
+## 📚 Learning Resources
+
+See [LEARNINGS.md](LEARNINGS.md) for:
+- Common errors and solutions
+- PromQL query examples
+- Docker troubleshooting
+- Go best practices
 
 ## 📝 License
 
