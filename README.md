@@ -11,6 +11,7 @@ A production-ready URL shortener service built with Go, featuring Redis persiste
 - **Redis Storage**: Persistent URL storage with Redis
 - **Prometheus Metrics**: Built-in metrics for monitoring
 - **Grafana Dashboards**: Visualize application performance
+- **CI/CD Pipeline**: GitHub Actions for automated testing & Docker builds
 - **Health Checks**: Kubernetes-ready health endpoints
 - **Graceful Shutdown**: Clean server shutdown handling
 - **Docker Compose**: One-command local development setup
@@ -162,6 +163,27 @@ kubectl get pods,svc
 
 # Access via port-forward
 kubectl port-forward svc/url-shortener 8080:80
+```
+
+## 🔄 CI/CD Pipeline
+
+Automated pipeline using GitHub Actions (`.github/workflows/ci.yml`):
+
+**On every push/PR to main:**
+1. ✅ Checkout code
+2. ✅ Set up Go 1.23
+3. ✅ Install dependencies
+4. ✅ Run tests
+5. ✅ Build binary
+
+**On push to main (after build succeeds):**
+6. 🐳 Build Docker image
+7. 📦 Push to GitHub Container Registry (GHCR)
+8. 🏷️ Tag with commit SHA + `latest`
+
+**Docker image available at:**
+```
+ghcr.io/kunalsiyag/url_shortener_devops:latest
 ```
 
 ## 🔧 Environment Variables

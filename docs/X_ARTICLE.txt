@@ -1,0 +1,195 @@
+Building a Production-Ready URL Shortener with Full DevOps Monitoring
+
+A complete guide to building, containerizing, and monitoring a URL shortener with Go, Redis, Prometheus, and Grafana
+
+
+INTRODUCTION
+
+I recently built a complete URL shortener service from scratch, not just the basic functionality, but with a full DevOps setup including monitoring, dashboards, containerization, and Kubernetes deployment configurations.
+
+In this article, I'll walk you through the entire project, the technology choices I made, the challenges I faced, and what I learned along the way.
+
+GitHub Repository: https://github.com/KunalSiyag/URL_Shortener_DevOps
+
+
+THE TECHNOLOGY STACK
+
+Here's what powers this project:
+
+• Backend: Go - Fast, compiled, excellent for HTTP services
+• Storage: Redis - In-memory database for quick lookups
+• Metrics: Prometheus - Time-series database for monitoring
+• Visualization: Grafana - Beautiful dashboards
+• Containerization: Docker Compose - One-command local setup
+• Orchestration: Kubernetes - Production deployment
+
+
+THE ARCHITECTURE
+
+The system follows a simple but production-ready architecture:
+
+Client (UI) → Go API → Redis (Storage)
+                 ↓
+            Prometheus
+                 ↓
+             Grafana
+
+When a user submits a long URL:
+1. The Go API generates a unique 6-character code
+2. The mapping is stored in Redis
+3. The short URL is returned to the user
+4. Every request is tracked by Prometheus metrics
+
+
+BUILDING THE WEB UI
+
+[INSERT IMAGE: docs/ui-screenshot.png]
+
+I built a modern, glassmorphism-style interface using pure HTML, CSS, and vanilla JavaScript. No frameworks required!
+
+Features:
+• Dark theme with gradient background
+• One-click URL shortening
+• Copy to clipboard functionality
+• Local history (saves your recent URLs)
+• Smooth animations and loading states
+
+The UI communicates with the backend API via fetch requests. I had to add CORS middleware to the Go server to allow cross-origin requests when running the UI as a local file.
+
+
+IMPLEMENTING PROMETHEUS METRICS
+
+[INSERT IMAGE: docs/prometheus-graph.png]
+
+Monitoring is crucial for any production service. I instrumented the Go application with Prometheus metrics:
+
+Key metrics tracked:
+• Request rate per second
+• Response latency distribution (p50, p95, p99)
+• Error rates by status code
+• Total request counts
+
+The Go code uses CounterVec for request counts and HistogramVec for latency distribution. This gives us deep insights into application performance.
+
+
+CREATING GRAFANA DASHBOARDS
+
+[INSERT IMAGE: docs/grafana-full-dashboard.png]
+
+Grafana turns raw metrics into actionable insights. My dashboard includes:
+
+• Request Rate Panel: Shows requests per second over time
+• Latency Histogram: Visualizes response time distribution
+• Pod Status: Health indicators for each service
+• Error Rate: Tracks non-200 responses
+
+One thing I learned: Grafana auto-provisioning is incredibly powerful. By adding YAML configuration files, Prometheus is automatically added as a datasource when Grafana starts—no manual setup required!
+
+
+DOCKER COMPOSE: ONE COMMAND TO RULE THEM ALL
+
+The entire stack runs with a single command:
+
+    docker compose up -d
+
+This spins up four containers:
+1. url-shortener - The Go application
+2. redis - Persistent storage
+3. prometheus - Metrics collection
+4. grafana - Visualization
+
+The docker-compose.yml includes health checks, proper networking, and volume mounts for data persistence.
+
+
+DEBUGGING JOURNEY: LESSONS LEARNED
+
+Building this project wasn't without challenges. Here are the key issues I encountered and how I solved them:
+
+1. Docker Permission Denied
+Error: permission denied while trying to connect to the Docker daemon socket
+Solution: Use sudo with Docker commands, or add your user to the docker group.
+
+2. Port Already Allocated
+Error: Bind for 0.0.0.0:8080 failed: port is already allocated
+Solution: Check running containers with docker ps and stop conflicting ones.
+
+3. CORS Blocking API Requests
+Error: The UI couldn't communicate with the backend due to CORS policy.
+Solution: Added CORS middleware to the Go server to allow cross-origin requests.
+
+4. Range Vector vs Instant Vector in Grafana
+Problem: Query promhttp_metric_handler_requests_total[1m] worked in Prometheus but not in Grafana.
+Solution: Grafana needs instant vectors for visualization. Wrap with rate():
+    rate(promhttp_metric_handler_requests_total[1m])
+
+
+GO BEST PRACTICES USED
+
+Some clean patterns I implemented:
+
+Graceful Shutdown: The app properly handles SIGTERM and SIGINT signals, essential for Kubernetes deployments.
+
+Interface-Based Storage: The code uses a URLStore interface, making it easy to swap between Redis and in-memory storage for testing.
+
+Middleware Chain: Metrics collection is handled via middleware, keeping the handlers clean.
+
+
+KUBERNETES READY
+
+The project includes complete Kubernetes manifests:
+
+• deployment.yaml - Application deployment
+• service.yaml - ClusterIP service
+• ingress.yaml - External access
+• prometheus-deployment.yaml - Monitoring
+• grafana-deployment.yaml - Visualization
+• prometheus-config.yaml - ConfigMap for scrape config
+
+Deploy to any Kubernetes cluster with:
+
+    kubectl apply -f k8s/
+
+
+CI/CD WITH GITHUB ACTIONS
+
+Automated pipeline that runs on every push:
+
+Build Job:
+1. Checkout code
+2. Set up Go 1.23
+3. Run tests
+4. Build binary
+
+Docker Job (on main branch):
+1. Build Docker image
+2. Push to GitHub Container Registry
+3. Tag with commit SHA + latest
+
+The Docker image is automatically available at:
+ghcr.io/kunalsiyag/url_shortener_devops:latest
+
+This means every push to main automatically builds and publishes a fresh Docker image!
+
+
+WHAT'S NEXT?
+
+Potential improvements for this project:
+• Add user authentication
+• Implement URL expiration
+• Add click analytics
+• Deploy to cloud (AWS/GCP/Azure)
+• Add CI/CD with GitHub Actions
+
+
+CONCLUSION
+
+This project taught me that building a production-ready service is about much more than just the core functionality. Proper monitoring, containerization, and documentation are equally important.
+
+The complete source code, including detailed documentation and a learnings guide, is available on GitHub.
+
+Repository: https://github.com/KunalSiyag/URL_Shortener_DevOps
+
+If you found this helpful, give it a star and feel free to reach out with questions!
+
+
+#DevOps #Golang #Prometheus #Grafana #Docker #Kubernetes #WebDevelopment
